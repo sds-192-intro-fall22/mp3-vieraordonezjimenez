@@ -1,0 +1,48 @@
+---
+title: "SDS 192 Mini-Project 3"
+subtitle: "SDS 192"
+author: 
+- name: Author One
+  affiliation: Smith College
+- name: Author Two
+  affiliation: Smith College
+- name: Author Three
+  affiliation: Smith College
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+editor: 
+  mode: source
+output: 
+  html_document:
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
+    theme: lumen
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(leaflet)
+library(RColorBrewer)
+library(sf)
+```
+
+```{r import}
+# Import TRI data here! 
+# Be sure to filter to your county
+# Also be convert releases into a common unit of measure using a single line of code
+```
+
+# Analysis
+
+```{r analysis-1}
+# You will likely need a few code chunks for this project. You can start with this code chunk and then add as needed below. 
+```
+
+# Report findings
+
+Note that you can choose how you want to present your analysis in this final mini-project as long as it renders in quarto!
+
+
+

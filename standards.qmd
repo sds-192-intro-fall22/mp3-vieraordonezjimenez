@@ -1,0 +1,38 @@
+---
+title: "SDS 192 Mini-Project 3 Standards"
+subtitle: "SDS 192"
+author: 
+- name: Author One
+  affiliation: Smith College
+- name: Author Two
+  affiliation: Smith College
+- name: Author Three
+  affiliation: Smith College
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+source:
+  mode: editor
+output: 
+  html_document:
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
+    theme: lumen
+    df_print: paged
+    code_folding: show
+---
+
+
+# Tidying Data
+
+Fill response here...
+
+# Programming in R
+
+Fill response here...
+
+# Mapping
+
+Fill response here...
+
+> Please be sure that all files are rendered to HTML and that you have checked the output prior to submission!
+
