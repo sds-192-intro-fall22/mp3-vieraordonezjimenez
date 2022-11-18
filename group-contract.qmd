@@ -1,9 +1,9 @@
 ---
 title: "SDS 192 Group Contract"
 author:
- - Author One
- - Author Two
- - Author Three
+ - Aaliyah Viera
+ - Rose Ordonez-Rodriguez
+ - Nancy Jiminez Sandoval
 date: "Last updated on `r Sys.Date()`"
 output: html_document
 ---
@@ -14,136 +14,137 @@ Working in groups can be both incredibly rewarding and incredibly challenging. T
 
 ## Who will be responsible for scheduling meetings and hosting Zoom calls? 
 
-FILL ME
+Aaliyah 
 
 ## Who will be responsible for facilitating discussion during team meetings?
 
-FILL ME 
+Aaliyah
 
 ## Who will be responsible for taking notes and recording decisions during meetings?
 
-FILL ME
+All
 
 ## Who will be responsible for emailing the professor with questions?
 
-FILL ME
+Aaliyah
 
 ## Who will be responsible for requesting group assignment extensions?
 
-FILL ME
+Rose
 
 ## Who will be responsible for setting deadlines for drafts? 
 
-FILL ME
+All
 
 ## Who will be responsible for checking in with team members when drafts are late?
 
-FILL ME
+All of us
 
 ## Who will be responsible for reviewing all materials before submission?
 
-FILL ME
+All
 
 ## Who will be responsible for submitting assignments?
 
-FILL ME
+All
 
 
 # COLLABORATIVE WORKSPACES
 
 ## Where will the team keep meeting notes? 
 
-FILL ME
+Google docs
 
 ## Where will the team store drafts of assignments? 
 
-FILL ME
+google docs
 
 ## Through what channels will the team communicate when not meeting?
 
-FILL ME
+Slack. imessage
 
 ## What is the expected response time for emails and messages? 
 
-FILL ME
+ASAP
 
 
 # MEETINGS
 
 ## How often will the team meet? 
 
-FILL ME
+1-2 TIMES A WEEK
 
 ## What days/times will the team meet?
 
-FILL ME
+TUESDAYS 4-5PM 
+WEDNESDAYS 7-9PM
+FRIDAYS 1:30-2:30PM
 
 ## How long will meetings be?
 
-FILL ME
+1-2 HOURS 
 
 ## How will you make decisions during meetings (e.g. consensus, a vote)?
 
-FILL ME
+CONSENSUS
 		
 ## What strategies will you use to stay on task during meetings?
 
-FILL ME
+ASSIGNING TASKS TO EACH OF US TO LOOK OVER
 
 ## How should team members inform each other if they are going to be late to a meeting?
 
-FILL ME
+A QUICK TEXT
 			
 ## When is it ok for a team member to skip a meeting? How soon should they inform the group?
 
-FILL ME
+SICKNESS, EMERGENCY, AS SOON AS THEY KNOW
 
 ## What will you do if a group member is chronically absent from or late to meetings?
 
-FILL ME
+Checking in and rescheudling 
 
 ## What will you do if a group member is consistently not participating in meetings?
 
-FILL ME
+checking in and encouraging to attempt a current issue 
 
 ## What are your expectations for respectful engagement and communication during meetings and in collaborative workspaces? What will you do if a member of your team does not meet these expectations?
 
-FILL ME
-
+Listetening in to what others have to say, respecting the space for others
 
 # ASSIGNMENTS
 
 ## How will you ensure that all team members fully understand assignment expectations? What will you do if your team is unsure how to complete an assignment?
 
-FILL ME
+Look for resources and build of each other
 
 ## How will you ensure that all team members are contributing equitably to assignments?
 
-FILL ME
+Making sure tasks assignments are equal and redistributing tasks
 
 ## How soon in advance of deadlines do you expect all team members to share drafts of their work?
 
-FILL ME
+2 days in advance.
 
 ## What will be your process for reviewing each other’s work before submission?
 
-FILL ME
+looking at each others code; pushing it and review 
 
 ## What will you do if the quality of a team member’s work does not meet the group’s expectations? When is it permissible to revise another team member’s work?
 
-FILL ME
+Just ask beforehand for revision and you can make suggestions (making comments in google docs)
 
 ## What are your expectations around punctuality regarding group deadlines? How should team members inform each other if they need an extension?
 
-FILL ME
+just warning in imessage (24 hour turn around)
 
 ## What will you do if a student is consistently late in submitting draft work?
 
-FILL ME
+checking in
 
 ## What will you do if you discover that a team member’s work violates the Academic Code of Conduct?
 
-FILL ME
+Warning them that it does and suggesting to fix it 
 
 # SIGNATURES
 
@@ -151,13 +152,13 @@ FILL ME
 * I agree to abide by the terms and conditions outlined in this document.			
 * I understand that failing to abide by the terms and conditions outlined in this document may impact my grade.
  							
-Signature: FILL ME 
+Signature: Aaliyah Viera 
 Date: `r format(Sys.time(), '%d %B, %Y')`
 
-Signature: FILL ME 
+Signature: Nancy Jimenez
 Date: `r format(Sys.time(), '%d %B, %Y')`
 
-Signature: FILL ME
+Signature: Rose Ordonez-Rodriguez
 Date `r format(Sys.time(), '%d %B, %Y')`
 
 
