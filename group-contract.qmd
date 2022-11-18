@@ -146,7 +146,7 @@ checking in
 
 Warning them that it does and suggesting to fix it 
 
-# SIGNATURES
+# SIGNATURES 
 
 * I participated in drafting the standards, roles, and procedures outlined in this document.
 * I agree to abide by the terms and conditions outlined in this document.			
