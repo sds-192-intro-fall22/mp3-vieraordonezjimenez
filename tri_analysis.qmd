@@ -31,9 +31,14 @@ library(sf)
 ```{r import}
 # Import TRI data here! 
 library(readr)
-X2021_tx <- read_csv("2021_tx.csv")
-View(X2021_tx)
+texas_tri <- read_csv("2021_tx.csv")
+View(texas_tri)
 # Be sure to filter to your county
+
+texas_tri_dallas <- texas_tri |>
+  filter(`7. COUNTY` == "DALLAS")
+
+view(texas_tri_dallas)
 
 # Also be convert releases into a common unit of measure using a single line of code
 ```
