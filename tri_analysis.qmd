@@ -2,7 +2,7 @@
 title: "SDS 192 Mini-Project 3"
 subtitle: "SDS 192"
 author: 
-- name: Author One
+- name: Aaliyah Viera
   affiliation: Smith College
 - name: Author Two
   affiliation: Smith College
@@ -30,7 +30,11 @@ library(sf)
 
 ```{r import}
 # Import TRI data here! 
+library(readr)
+X2021_tx <- read_csv("2021_tx.csv")
+View(X2021_tx)
 # Be sure to filter to your county
+
 # Also be convert releases into a common unit of measure using a single line of code
 ```
 
