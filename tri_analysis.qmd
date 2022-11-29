@@ -6,7 +6,7 @@ author:
   affiliation: Smith College
 - name: Author Two
   affiliation: Smith College
-- name: Author Three
+- name: Nancy Jimenez
   affiliation: Smith College
 date: "`r format(Sys.Date(), '%B %e, %Y')`"
 editor: 
@@ -26,6 +26,11 @@ library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
 library(sf)
+
+install.packages("remotes")
+library(remotes)
+
+remotes::install_github("baumer-lab/fec16")
 ```
 
 ```{r import}
@@ -36,6 +41,19 @@ View(X2021_tx)
 # Be sure to filter to your county
 
 # Also be convert releases into a common unit of measure using a single line of code
+library(readr)
+texas_tri <- read_csv("~/SDS LAB 100/SDS192git/SDS192/2021_tx.csv")
+View(texas_tri)
+
+dallas_texas_tri <- 
+  texas_tri |>
+  filter(`7. COUNTY` == "DALLAS")
+
+view(dallas_texas_tri)
+
+dallas_texas_tri |>
+  filter(`47. UNIT OF MEASURE` != "Pounds")
+
 ```
 
 # Analysis
