@@ -48,10 +48,13 @@ dallas_texas_tri <-
 
 # Also be convert releases into a common unit of measure using a single line of code
 
+
 dallas_texas_tri_clean <-
   dallas_texas_tri |>
   mutate(across(.cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER, case_when(X47..UNIT.OF.MEASURE == "Grams" ~ .x * 0.002,
                                               TRUE ~ .x)))
+
+
 
 
 
