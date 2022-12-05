@@ -4,7 +4,7 @@ subtitle: "SDS 192"
 author: 
 - name: Aaliyah Viera
   affiliation: Smith College
-- name: Author Two
+- name: Rose Ordonez-Rodriguez
   affiliation: Smith College
 - name: Nancy Jimenez
   affiliation: Smith College
