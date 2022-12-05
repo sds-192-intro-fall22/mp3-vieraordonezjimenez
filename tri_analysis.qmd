@@ -4,7 +4,7 @@ subtitle: "SDS 192"
 author: 
 - name: Aaliyah Viera
   affiliation: Smith College
-- name: Rose Ordonez-Rodriguez
+- name: Author Two
   affiliation: Smith College
 - name: Nancy Jimenez
   affiliation: Smith College
@@ -38,7 +38,6 @@ library(readr)
 texas_tri <- read_csv("2021_tx.csv")
 texas_tri_names <- read_csv("2021_tx.csv", name_repair = make.names)
 
-
 # Be sure to filter to your county
 
 dallas_texas_tri <- 
@@ -48,13 +47,10 @@ dallas_texas_tri <-
 
 # Also be convert releases into a common unit of measure using a single line of code
 
-
 dallas_texas_tri_clean <-
   dallas_texas_tri |>
-  mutate(across(.cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER,~case_when(X47..UNIT.OF.MEASURE == "Grams" ~ .x * 0.002,
+  mutate(across(.cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER, ~case_when(X47..UNIT.OF.MEASURE == "Grams" ~ .x * 0.002,
                                               TRUE ~ .x)))
-
-
 
 
 
@@ -66,7 +62,7 @@ dallas_texas_tri_clean <-
 # You will likely need a few code chunks for this project. You can start with this code chunk and then add as needed below. 
 
 dallas_texas_tri_pivoted <-
-  dallas_texas_tri |>
+  dallas_texas_tri_clean |>
   select(X1..YEAR:X50..5.3...WATER) |>
   pivot_longer(cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER,
                names_to = "Type_of_Release",
@@ -83,6 +79,45 @@ dallas_texas_tri_pivoted <-
 
 
 ```
+
+Creating a Function
+```{r}
+#which 10 factories released the most amount of chemicals and in what locations are they located?
+
+top_10_factories <- dallas_texas_tri_pivoted |>
+  group_by(X4..FACILITY.NAME, X9..ZIP) |>
+  summarize(sum_chemical = sum(Values_Pounds)) |>
+  arrange(desc(sum_chemical)) |>
+  head(10)
+
+
+#How much of each chemical has been emitted by that factory?
+
+dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+  filter(X4..FACILITY.NAME == "AQUATIC CO")|>
+  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+  summarize(total_released = sum(Values_Pounds))
+  
+
+calculate_chemical_type_amount <- function(factory_name){
+  
+x <- dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+  filter(X4..FACILITY.NAME == factory_name)|>
+  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+  summarize(total_released = sum(Values_Pounds))
+
+  return(x)
+}
+
+total_chem_amount_per_factory <- 
+  map_df(top_10_factories, calculate_chemical_type_amount)
+
+total_chem_amount_per_factory 
+
+```
+
 
 # Report findings
 
