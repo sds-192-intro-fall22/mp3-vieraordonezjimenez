@@ -126,6 +126,8 @@ total_chem_amount_per_factory
 ## 1st Map: Chemical Release Amounts in Redlining areas, Dallas County, TX (2021)
 
 ```{r}
+#| label: sumchemreleaseXredlining
+#| fig-cap: "Above we’ve mapped the overall sum of chemical releases to overlay onto the redlining areas in Dallas County, TX. The polygon map indicates the grades of the redlined areas through the color palette gradients (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best) which is then layered with the total amount of chemical releases in pounds from factories" 
 redlining_data <- st_read("TXDallas1937/cartodb-query.shp")
 
 #Transforming CRS: converting crs for dallas tri data to leaflet crs
