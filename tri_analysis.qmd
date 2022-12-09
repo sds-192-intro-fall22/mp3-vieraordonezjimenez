@@ -26,11 +26,10 @@ library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
 library(sf)
-
-install.packages("remotes")
 library(remotes)
-
 ```
+
+# Importing data + wrangling data
 
 ```{r import}
 # Import TRI data here! 
@@ -52,7 +51,14 @@ dallas_texas_tri_clean <-
   mutate(across(.cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER, ~case_when(X47..UNIT.OF.MEASURE == "Grams" ~ .x * 0.002,
                                               TRUE ~ .x)))
 
+# Importing Redlining Map 
+redlining_map_dallas <- st_read("TXDallas1937/cartodb-query.shp")
 
+# Transforming CRS
+crs_dallas_texas <-
+dallas_texas_tri_pivoted|>
+   st_as_sf(coords = c("X12..LATITUDE", "X13..LONGITUDE"), crs = 4269) |>
+   st_transform(crs = 4326)
 
 ```
 
@@ -80,7 +86,8 @@ dallas_texas_tri_pivoted <-
 
 ```
 
-Creating a Function
+# Creating a Function
+
 ```{r}
 #which 10 factories released the most amount of chemicals and in what locations are they located?
 
@@ -88,40 +95,256 @@ top_10_factories <- dallas_texas_tri_pivoted |>
   group_by(X4..FACILITY.NAME, X9..ZIP) |>
   summarize(sum_chemical = sum(Values_Pounds)) |>
   arrange(desc(sum_chemical)) |>
-  head(10)
+  head(10) |>
+  pull(X4..FACILITY.NAME)
 
 
 #How much of each chemical has been emitted by that factory?
 
-dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
-  filter(X4..FACILITY.NAME == "AQUATIC CO")|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
+# dallas_texas_tri_pivoted |>
+#   select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+#   filter(X4..FACILITY.NAME == "AQUATIC CO")|>
+#   group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+#   summarize(total_released = sum(Values_Pounds))
   
 
 calculate_chemical_type_amount <- function(factory_name){
   
-x <- dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+dallas_texas_tri_pivoted |>
   filter(X4..FACILITY.NAME == factory_name)|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
-
-  return(x)
+    group_by(Type_of_Release) |>
+    summarize(Values_Pounds = sum(Values_Pounds)) |>
+  ggplot(aes(x = Type_of_Release, y = Values_Pounds)) +
+  geom_col() +
+  labs(title = factory_name,
+       x = "Type of Release",
+       y = "Total Value Released")
 }
 
 total_chem_amount_per_factory <- 
-  map_df(top_10_factories, calculate_chemical_type_amount)
+  map(top_10_factories, calculate_chemical_type_amount)
 
 total_chem_amount_per_factory 
 
 ```
 
+# Mapping
+
+## 1st Map
+
+```{r}
+redlining_data <- st_read("TXDallas1937/cartodb-query.shp")
+
+#converting crs for dallas tri data to leaflet crs
+crs_dallas_texas <- dallas_texas_tri_pivoted |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#STEP 1: wrangling for map 1 to show all facilities once and total released.
+total_released_factories <- dallas_texas_tri_pivoted |>
+  group_by(X4..FACILITY.NAME, X13..LONGITUDE, X12..LATITUDE) |>
+  summarize(sum_chemical = sum(Values_Pounds)) 
+
+#STEP 2: Converting the wrangling into a Leaflet CRS for map 1
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#color pal for map 1 polygons
+pal_factor <- colorFactor(palette = "YlOrRd", 
+                        domain = redlining_data$holc_grade, n = 4)
+
+#color pal for map 1 circle markers
+pal_bin <- colorBin(palette = "Greens",
+                    domain = crs_total_released_factories$sum_chemical,
+                    bins = 4)
+#creating map 1
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_data,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |> 
+  addCircleMarkers(data = crs_total_released_factories, 
+                   fillColor = ~pal_bin(sum_chemical),
+                   stroke = TRUE,
+                   radius = 10,
+                   fillOpacity = 1) |>
+  addLegend(data = redlining_data,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") |>
+  addLegend(data = crs_total_released_factories,
+            pal = pal_bin,
+            values = ~sum_chemical,
+            title = "Total Amount Released")
+```
+
+## 2nd Map: Stack Air Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#making new table based on stack air releases at each specific facility 
+stack_air_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Stack Air")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(stack_air_data)
+
+
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "cloud",
+  iconColor = "black",
+  markerColor = "lightgray", 
+  library = "fa",
+  spin = TRUE
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 2
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = stack_air_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
+
+```
+
+## 3rd Map: Fugitive Air Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#making new table based on stack air releases at each specific facility 
+fugitive_air_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Fugitive Air")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(fugitive_air_data)
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "cloud",
+  iconColor = "beige",
+  markerColor = "cadetblue", 
+  library = "fa",
+  spin = TRUE
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 3
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = fugitive_air_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
+```
+
+## 4th Map: Water Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#making new table based on stack air releases at each specific facility 
+water_release_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Water")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(water_release_data)
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "water",
+  iconColor = "beige",
+  markerColor = "lightblue", 
+  library = "fa"
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 3
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = water_release_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
+```
 
 # Report findings
 
 Note that you can choose how you want to present your analysis in this final mini-project as long as it renders in quarto!
-
-
-
