@@ -179,6 +179,8 @@ leaflet() |>
 ## 2nd Map: Stack Air Releases within Redlining Areas in Dallas County, TX (2021)
 
 ```{r}
+#| label: fig-stackairXredlining
+#| fig-cap: "Facility locations that released Stack Air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 #making new table based on stack air releases at each specific facility 
 stack_air_data <-
   dallas_texas_tri_pivoted |>
@@ -212,8 +214,6 @@ stack_air_data |>
   st_transform(crs = 4326)
 
 #MAP 2
-#| label: fig-stackairXredlining
-#| fig-cap: "Facility locations that released Stack Air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
@@ -238,6 +238,8 @@ leaflet() |>
 ## 3rd Map: Fugitive Air Releases within Redlining Areas in Dallas County, TX (2021)
 
 ```{r}
+#| label: fig-fugitiveairXredlining
+#| fig-cap: "Facility locations that released fugitive air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 #making new table based on stack air releases at each specific facility 
 fugitive_air_data <-
   dallas_texas_tri_pivoted |>
@@ -269,8 +271,6 @@ stack_air_data |>
   st_transform(crs = 4326)
 
 #MAP 3
-#| label: fig-fugitiveairXredlining
-#| fig-cap: "Facility locations that released fugitive air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
@@ -294,6 +294,8 @@ leaflet() |>
 ## 4th Map: Water Releases within Redlining Areas in Dallas County, TX (2021)
 
 ```{r}
+#| label: fig-waterXredlining
+#| fig-cap: "Facility locations that released water emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 #making new table based on stack air releases at each specific facility 
 water_release_data <-
   dallas_texas_tri_pivoted |>
@@ -323,9 +325,7 @@ stack_air_data |>
   st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
   st_transform(crs = 4326)
 
-#MAP 3
-#| label: fig-waterXredlining
-#| fig-cap: "Facility locations that released water emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
+#MAP 4
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
