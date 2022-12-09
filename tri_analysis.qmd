@@ -54,15 +54,9 @@ dallas_texas_tri_clean <-
 # Importing Redlining Map 
 redlining_map_dallas <- st_read("TXDallas1937/cartodb-query.shp")
 
-# Transforming CRS
-crs_dallas_texas <-
-dallas_texas_tri_pivoted|>
-   st_as_sf(coords = c("X12..LATITUDE", "X13..LONGITUDE"), crs = 4269) |>
-   st_transform(crs = 4326)
-
 ```
 
-# Analysis
+# Pivot
 
 ```{r analysis-1}
 # You will likely need a few code chunks for this project. You can start with this code chunk and then add as needed below. 
@@ -83,7 +77,6 @@ dallas_texas_tri_pivoted <-
                                        "X50..5.3...WATER",
                                        "Water"))
 ```
-
 
 # Creating a Function
 
@@ -135,7 +128,7 @@ total_chem_amount_per_factory
 ```{r}
 redlining_data <- st_read("TXDallas1937/cartodb-query.shp")
 
-#converting crs for dallas tri data to leaflet crs
+#Transforming CRS: converting crs for dallas tri data to leaflet crs
 crs_dallas_texas <- dallas_texas_tri_pivoted |>
   st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
   st_transform(crs = 4326)
@@ -217,6 +210,8 @@ stack_air_data |>
   st_transform(crs = 4326)
 
 #MAP 2
+#| label: fig-stackairXredlining
+#| fig-cap: "Facility locations that released Stack Air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
@@ -272,6 +267,8 @@ stack_air_data |>
   st_transform(crs = 4326)
 
 #MAP 3
+#| label: fig-fugitiveairXredlining
+#| fig-cap: "Facility locations that released fugitive air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
@@ -325,6 +322,8 @@ stack_air_data |>
   st_transform(crs = 4326)
 
 #MAP 3
+#| label: fig-waterXredlining
+#| fig-cap: "Facility locations that released water emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
 leaflet() |>
   setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
   addProviderTiles("CartoDB.Positron") |>
