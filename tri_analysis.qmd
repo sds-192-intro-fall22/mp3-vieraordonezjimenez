@@ -26,8 +26,6 @@ library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
 library(sf)
-
-install.packages("remotes")
 library(remotes)
 
 ```
@@ -82,42 +80,45 @@ dallas_texas_tri_pivoted <-
 
 Creating a Function
 ```{r}
-#which 10 factories released the most amount of chemicals and in what locations are they located?
+#which 10 factories released the most amount of chemicals?
 
 top_10_factories <- dallas_texas_tri_pivoted |>
   group_by(X4..FACILITY.NAME, X9..ZIP) |>
   summarize(sum_chemical = sum(Values_Pounds)) |>
   arrange(desc(sum_chemical)) |>
-  head(10)
+  head(10) |>
+  pull(X4..FACILITY.NAME)
 
 
 #How much of each chemical has been emitted by that factory?
 
-dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
-  filter(X4..FACILITY.NAME == "AQUATIC CO")|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
+# dallas_texas_tri_pivoted |>
+#   select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+#   filter(X4..FACILITY.NAME == "AQUATIC CO")|>
+#   group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+#   summarize(total_released = sum(Values_Pounds))
   
 
+#creating a bar graph for type of release, total chemical released for the vector of the top 10 factories.
 calculate_chemical_type_amount <- function(factory_name){
   
-x <- dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+dallas_texas_tri_pivoted |>
   filter(X4..FACILITY.NAME == factory_name)|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
-
-  return(x)
+    group_by(Type_of_Release) |>
+    summarize(Values_Pounds = sum(Values_Pounds)) |>
+  ggplot(aes(x = Type_of_Release, y = Values_Pounds)) +
+  geom_col() +
+  labs(title = factory_name,
+       x = "Type of Release",
+       y = "Total Value Released")
 }
 
 total_chem_amount_per_factory <- 
-  map_df(top_10_factories, calculate_chemical_type_amount)
+  map(top_10_factories, calculate_chemical_type_amount)
 
 total_chem_amount_per_factory 
 
 ```
-
 
 # Report findings
 
