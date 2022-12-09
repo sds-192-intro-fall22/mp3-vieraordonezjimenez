@@ -26,8 +26,6 @@ library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
 library(sf)
-
-install.packages("remotes")
 library(remotes)
 
 ```
@@ -76,11 +74,10 @@ dallas_texas_tri_pivoted <-
   mutate(Type_of_Release = str_replace(Type_of_Release,
                                        "X50..5.3...WATER",
                                        "Water"))
-
-
 ```
 
 Creating a Function
+
 ```{r}
 #which 10 factories released the most amount of chemicals and in what locations are they located?
 
@@ -88,40 +85,90 @@ top_10_factories <- dallas_texas_tri_pivoted |>
   group_by(X4..FACILITY.NAME, X9..ZIP) |>
   summarize(sum_chemical = sum(Values_Pounds)) |>
   arrange(desc(sum_chemical)) |>
-  head(10)
+  head(10) |>
+  pull(X4..FACILITY.NAME)
 
 
 #How much of each chemical has been emitted by that factory?
 
-dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
-  filter(X4..FACILITY.NAME == "AQUATIC CO")|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
+# dallas_texas_tri_pivoted |>
+#   select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+#   filter(X4..FACILITY.NAME == "AQUATIC CO")|>
+#   group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+#   summarize(total_released = sum(Values_Pounds))
   
 
 calculate_chemical_type_amount <- function(factory_name){
   
-x <- dallas_texas_tri_pivoted |>
-  select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+dallas_texas_tri_pivoted |>
   filter(X4..FACILITY.NAME == factory_name)|>
-  group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
-  summarize(total_released = sum(Values_Pounds))
-
-  return(x)
+    group_by(Type_of_Release) |>
+    summarize(Values_Pounds = sum(Values_Pounds)) |>
+  ggplot(aes(x = Type_of_Release, y = Values_Pounds)) +
+  geom_col() +
+  labs(title = factory_name,
+       x = "Type of Release",
+       y = "Total Value Released")
 }
 
 total_chem_amount_per_factory <- 
-  map_df(top_10_factories, calculate_chemical_type_amount)
+  map(top_10_factories, calculate_chemical_type_amount)
 
 total_chem_amount_per_factory 
 
 ```
 
+# 1st Map:Chemical Releases within Redlining Areas in Dallas County, TX (2021).
+
+```{r}
+redlining_data <- st_read("TXDallas1937/cartodb-query.shp")
+
+#converting crs for dallas tri data to leaflet crs
+crs_dallas_texas <- dallas_texas_tri_pivoted |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#STEP 1: wrangling for map 1 to show all facilities once and total released.
+total_released_factories <- dallas_texas_tri_pivoted |>
+  group_by(X4..FACILITY.NAME, X13..LONGITUDE, X12..LATITUDE) |>
+  summarize(sum_chemical = sum(Values_Pounds)) 
+
+#STEP 2: Converting the wrangling into a Leaflet CRS for map 1
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#color pal for map 1 polygons
+pal_factor <- colorFactor(palette = "YlOrRd", 
+                        domain = redlining_data$holc_grade, n = 4)
+
+#color pal for map 1 circle markers
+pal_bin <- colorBin(palette = "Greens",
+                    domain = crs_total_released_factories$sum_chemical,
+                    bins = 4)
+#creating map 1
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_data,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE)|> 
+  addCircleMarkers(data = crs_total_released_factories, 
+                   fillColor = ~pal_bin(sum_chemical),
+                   stroke = TRUE,
+                   radius = 10,
+                   fillOpacity = 1) |>
+  addLegend(data = redlining_data,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") |>
+  addLegend(data = crs_total_released_factories,
+            pal = pal_bin,
+            values = ~sum_chemical,
+            title = "Total Amount Released")
+```
 
 # Report findings
 
 Note that you can choose how you want to present your analysis in this final mini-project as long as it renders in quarto!
-
-
-
