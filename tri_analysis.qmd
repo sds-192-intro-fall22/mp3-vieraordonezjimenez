@@ -79,7 +79,7 @@ dallas_texas_tri_pivoted <-
 Creating a Function
 
 ```{r}
-#which 10 factories released the most amount of chemicals and in what locations are they located?
+#which 10 factories released the most amount of chemicals?
 
 top_10_factories <- dallas_texas_tri_pivoted |>
   group_by(X4..FACILITY.NAME, X9..ZIP) |>
@@ -98,6 +98,7 @@ top_10_factories <- dallas_texas_tri_pivoted |>
 #   summarize(total_released = sum(Values_Pounds))
   
 
+#creating a bar graph for type of release, total chemical released for the vector of the top 10 factories.
 calculate_chemical_type_amount <- function(factory_name){
   
 dallas_texas_tri_pivoted |>
@@ -117,6 +118,7 @@ total_chem_amount_per_factory <-
 total_chem_amount_per_factory 
 
 ```
+
 
 # 1st Map:Chemical Releases within Redlining Areas in Dallas County, TX (2021).
 
