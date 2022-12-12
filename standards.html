@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Aaliyah Viera">
+<meta name="author" content="Rose Ordonez-Rodriguez">
+<meta name="author" content="Nancy Jimenez">
+<meta name="dcterms.date" content="2022-12-12">
+
+<title>SDS 192 Mini-Project 3 Standards</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+<script src="standards_files/libs/clipboard/clipboard.min.js"></script>
+<script src="standards_files/libs/quarto-html/quarto.js"></script>
+<script src="standards_files/libs/quarto-html/popper.min.js"></script>
+<script src="standards_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="standards_files/libs/quarto-html/anchor.min.js"></script>
+<link href="standards_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="standards_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="standards_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="standards_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="standards_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">SDS 192 Mini-Project 3 Standards</h1>
+<p class="subtitle lead">SDS 192</p>
+</div>
+
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    Aaliyah Viera 
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Smith College
+          </p>
+      </div>
+      <div class="quarto-title-meta-contents">
+    Rose Ordonez-Rodriguez 
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Smith College
+          </p>
+      </div>
+      <div class="quarto-title-meta-contents">
+    Nancy Jimenez 
+  </div>
+    <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Smith College
+          </p>
+      </div>
+    </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">December 12, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<section id="tidying-data" class="level1">
+<h1>Tidying Data</h1>
+<p>To demonstrate an ability to import local data: In our first code chunk, we imported our two data sets, tri dallas texas data and dallas texas redlining data.</p>
+<p>To demonstrate an ability to mutate across multiple columns: (converting from grams to pounds) Also in our first code chunk, we use the mutate function on dallas_texas_tri to convert all the units of measurements from grams to pounds.</p>
+<p>To demonstrate an ability to perform a pivot: in our pivot, we are moving stack air, fugitive air, and water into one column and renaming it “Type_of_Release”. After converting all release measurements into a uniform measurement form, we pivoted to transfer it all into one new column titled “Values_Pounds”. Performing this pivot allowed us to wrangle the data ease, getting our release information in a more efficient way.</p>
+</section>
+<section id="programming-in-r" class="level1">
+<h1>Programming in R</h1>
+<p>To Demonstrate an ability to write a custom function: we wrote a function with one argument being factory_name that is able to list the top ten facilities that release the most chemicals and the type of release that they are mainly emitting.</p>
+<p>To demonstrate an ability to iterate a function over multiple values in a vector: we converted the top ten factory names into a vector then used a map function to iterate the factory_name function argument over the top ten factories. This function makes a ggplot for every factory that is listed in the top ten. This allows us to see what type of air release (stack, water, or fugitive) is most prevalent when it comes to chemical releases when mapping onto redlining data.</p>
+<p>To demonstrate an ability to discern different data object types in R: We used polygon mapping on our first map to help see the grades of redlining in Dallas County and added markers to discern type of release and total amount of chemical releases. Vectors were used in the function in order to iterate through a list of values in our map function.</p>
+</section>
+<section id="mapping" class="level1">
+<h1>Mapping</h1>
+<p>To demonstrates an ability to produce point and/or polygon-based maps with descriptive title and labels: We made all of our maps with the redlining shape file for Dallas Texas. Using this data set, we made the first layer for all of our maps showing the redlines areas and the different grades in each area, with a legend: D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”. Using the cross-referencing skill learned in SDS 100, we were able to assign captions to each visualization, as well as hyperlinks throughout the blog post.</p>
+<p>To demonstrate an ability to transform data to an appropriate CRS We made sure to convert the CRS for our TRI data to 4269 in order to align them, this ensured leaflet would process the data we wanted onto the map.</p>
+<p>To demonstrate an ability to create informative color palettes for points or polygons on a map: In each map we incorporated a polygon map pertaining to the redlining areas within Dallas County, the color palette “YlOrRd” allowed us to show the different grades of redlining present in 2021. Additionally, we added a “Greens” palette for the points that layered over the polygon map to emphasize the concentration and amount of chemical releases.</p>
+<blockquote class="blockquote">
+<p>Please be sure that all files are rendered to HTML and that you have checked the output prior to submission!</p>
+</blockquote>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
