@@ -55,7 +55,7 @@ We made sure to convert the CRS for our TRI data to 4269 in order to align them,
 
 To demonstrate an ability to create informative color palettes for points or polygons on a map:
 In each map we incorporated a polygon map pertaining to the redlining areas within Dallas County, the color palette "YlOrRd" allowed us to show the different grades of redlining present in 2021. Additionally, we added a "Greens" palette for the points that layered over the polygon map to emphasize the concentration and amount of chemical releases.
-
+ 
 
 
 > Please be sure that all files are rendered to HTML and that you have checked the output prior to submission!
