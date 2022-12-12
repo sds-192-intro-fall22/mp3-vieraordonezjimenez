@@ -310,10 +310,10 @@ pal_factor <- colorFactor("YlOrRd",
 
 #declaring a single awesome icon 
 awesome <- makeAwesomeIcon(
-  icon = "water",
+  icon = "waterdrop",
   iconColor = "beige",
   markerColor = "lightblue", 
-  library = "fa"
+  library = "ion"
 )
 
 #Converting the CRS 
