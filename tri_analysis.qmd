@@ -2,11 +2,11 @@
 title: "SDS 192 Mini-Project 3"
 subtitle: "SDS 192"
 author: 
-- name: Author One
+- name: Aaliyah Viera
   affiliation: Smith College
-- name: Author Two
+- name: Rose Ordonez-Rodriguez
   affiliation: Smith College
-- name: Author Three
+- name: Nancy Jimenez
   affiliation: Smith College
 date: "`r format(Sys.Date(), '%B %e, %Y')`"
 editor: 
@@ -26,23 +26,335 @@ library(tidyverse)
 library(leaflet)
 library(RColorBrewer)
 library(sf)
+library(remotes)
 ```
+
+# Importing data + wrangling data
 
 ```{r import}
 # Import TRI data here! 
+library(readr)
+texas_tri <- read_csv("2021_tx.csv")
+texas_tri_names <- read_csv("2021_tx.csv", name_repair = make.names)
+
 # Be sure to filter to your county
+
+dallas_texas_tri <- 
+  texas_tri_names |>
+  filter(X7..COUNTY == "DALLAS")
+
+
 # Also be convert releases into a common unit of measure using a single line of code
+
+dallas_texas_tri_clean <-
+  dallas_texas_tri |>
+  mutate(across(.cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER, ~case_when(X47..UNIT.OF.MEASURE == "Grams" ~ .x * 0.002,
+                                              TRUE ~ .x)))
+
+# Importing Redlining Map 
+redlining_map_dallas <- st_read("TXDallas1937/cartodb-query.shp")
+
 ```
 
-# Analysis
+# Pivot
 
 ```{r analysis-1}
 # You will likely need a few code chunks for this project. You can start with this code chunk and then add as needed below. 
+
+dallas_texas_tri_pivoted <-
+  dallas_texas_tri_clean |>
+  select(X1..YEAR:X50..5.3...WATER) |>
+  pivot_longer(cols = X48..5.1...FUGITIVE.AIR:X50..5.3...WATER,
+               names_to = "Type_of_Release",
+               values_to = "Values_Pounds") |>
+  mutate(Type_of_Release = str_replace(Type_of_Release,
+                                       "X48..5.1...FUGITIVE.AIR",
+                                       "Fugitive Air")) |>
+   mutate(Type_of_Release = str_replace(Type_of_Release,
+                                       "X49..5.2...STACK.AIR",
+                                       "Stack Air")) |>
+  mutate(Type_of_Release = str_replace(Type_of_Release,
+                                       "X50..5.3...WATER",
+                                       "Water"))
+```
+
+# Creating a Function
+
+```{r}
+#which 10 factories released the most amount of chemicals?
+
+top_10_factories <- dallas_texas_tri_pivoted |>
+  group_by(X4..FACILITY.NAME, X9..ZIP) |>
+  summarize(sum_chemical = sum(Values_Pounds)) |>
+  arrange(desc(sum_chemical)) |>
+  head(10) |>
+  pull(X4..FACILITY.NAME)
+
+
+#How much of each chemical has been emitted by that factory?
+
+# dallas_texas_tri_pivoted |>
+#   select(X4..FACILITY.NAME, X34..CHEMICAL, Values_Pounds, X9..ZIP) |>
+#   filter(X4..FACILITY.NAME == "AQUATIC CO")|>
+#   group_by(X4..FACILITY.NAME, X34..CHEMICAL, X9..ZIP) |>
+#   summarize(total_released = sum(Values_Pounds))
+  
+
+#creating a bar graph for type of release, total chemical released for the vector of the top 10 factories.
+calculate_chemical_type_amount <- function(factory_name){
+  
+dallas_texas_tri_pivoted |>
+  filter(X4..FACILITY.NAME == factory_name)|>
+    group_by(Type_of_Release) |>
+    summarize(Values_Pounds = sum(Values_Pounds)) |>
+  ggplot(aes(x = Type_of_Release, y = Values_Pounds)) +
+  geom_col() +
+  labs(title = factory_name,
+       x = "Type of Release",
+       y = "Total Value Released")
+}
+
+total_chem_amount_per_factory <- 
+  map(top_10_factories, calculate_chemical_type_amount)
+
+total_chem_amount_per_factory 
+
+```
+
+# Mapping
+
+## 1st Map: Chemical Release Amounts in Redlining areas, Dallas County, TX (2021)
+
+```{r}
+#| label: sumchemreleaseXredlining
+#| fig-cap: "Above we’ve mapped the overall sum of chemical releases to overlay onto the redlining areas in Dallas County, TX. The polygon map indicates the grades of the redlined areas through the color palette gradients (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best) which is then layered with the total amount of chemical releases in pounds from factories" 
+redlining_data <- st_read("TXDallas1937/cartodb-query.shp")
+
+#Transforming CRS: converting crs for dallas tri data to leaflet crs
+crs_dallas_texas <- dallas_texas_tri_pivoted |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#STEP 1: wrangling for map 1 to show all facilities once and total released.
+total_released_factories <- dallas_texas_tri_pivoted |>
+  group_by(X4..FACILITY.NAME, X13..LONGITUDE, X12..LATITUDE) |>
+  summarize(sum_chemical = sum(Values_Pounds)) 
+
+#STEP 2: Converting the wrangling into a Leaflet CRS for map 1
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#color pal for map 1 polygons
+pal_factor <- colorFactor(palette = "YlOrRd", 
+                        domain = redlining_data$holc_grade, n = 4)
+
+#color pal for map 1 circle markers
+pal_bin <- colorBin(palette = "Greens",
+                    domain = crs_total_released_factories$sum_chemical,
+                    bins = 4)
+#creating map 1
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_data,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |> 
+  addCircleMarkers(data = crs_total_released_factories, 
+                   fillColor = ~pal_bin(sum_chemical),
+                   stroke = TRUE,
+                   radius = 10,
+                   fillOpacity = 1) |>
+  addLegend(data = redlining_data,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") |>
+  addLegend(data = crs_total_released_factories,
+            pal = pal_bin,
+            values = ~sum_chemical,
+            title = "Total Amount Released")
+```
+
+## 2nd Map: Stack Air Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#| label: fig-stackairXredlining
+#| fig-cap: "Facility locations that released Stack Air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
+#making new table based on stack air releases at each specific facility 
+stack_air_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Stack Air")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(stack_air_data)
+
+
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "cloud",
+  iconColor = "black",
+  markerColor = "lightgray", 
+  library = "fa",
+  spin = TRUE
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 2
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = stack_air_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
+
+```
+
+## 3rd Map: Fugitive Air Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#| label: fig-fugitiveairXredlining
+#| fig-cap: "Facility locations that released fugitive air emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
+#making new table based on stack air releases at each specific facility 
+fugitive_air_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Fugitive Air")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(fugitive_air_data)
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "cloud",
+  iconColor = "beige",
+  markerColor = "cadetblue", 
+  library = "fa",
+  spin = TRUE
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 3
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = fugitive_air_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
+```
+
+## 4th Map: Water Releases within Redlining Areas in Dallas County, TX (2021)
+
+```{r}
+#| label: fig-waterXredlining
+#| fig-cap: "Facility locations that released water emissions layered on top of redlinning map in Dallas Texas (D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best”)"
+#making new table based on stack air releases at each specific facility 
+water_release_data <-
+  dallas_texas_tri_pivoted |>
+  select(X4..FACILITY.NAME, X5..STREET.ADDRESS, X13..LONGITUDE, X12..LATITUDE, Type_of_Release, Values_Pounds)|>
+   filter(Type_of_Release == "Water")|>
+  mutate(Values_Pounds=na_if(Values_Pounds,0.0000))|>
+  na.omit(water_release_data)
+
+#creating color pal 
+pal_factor <- colorFactor("YlOrRd",
+                          domain = redlining_map_dallas$holc_grade, n = 4)
+
+#declaring a single awesome icon 
+awesome <- makeAwesomeIcon(
+  icon = "waterdrop",
+  iconColor = "beige",
+  markerColor = "lightblue", 
+  library = "ion"
+)
+
+#Converting the CRS 
+crs_total_released_factories <- total_released_factories |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+stack_air_data |>
+  st_as_sf(coords = c("X13..LONGITUDE", "X12..LATITUDE"), crs = 4269) |>
+  st_transform(crs = 4326)
+
+#MAP 4
+leaflet() |>
+  setView(lat = 32.7767, lng = -96.7970, zoom = 11) |>
+  addProviderTiles("CartoDB.Positron") |>
+  addPolygons(data = redlining_map_dallas,
+              fillColor = ~pal_factor(holc_grade),
+              fillOpacity = 0.8,
+              stroke = FALSE) |>
+  addAwesomeMarkers(data = water_release_data,
+                    icon = awesome,
+                    lng = ~ X13..LONGITUDE,
+                    lat = ~ X12..LATITUDE
+                    ) %>%
+  addProviderTiles("CartoDB.Positron") |>
+   addLegend(
+            data = redlining_map_dallas,
+            pal = pal_factor,
+            values = ~holc_grade,
+            title = "Redlining Grade") 
 ```
 
 # Report findings
 
-Note that you can choose how you want to present your analysis in this final mini-project as long as it renders in quarto!
+  In this dataset, we imported historic redlining data from Dallas, Texas and Dallas County TRI data from the TRI program focusing on a current time spread from 2021. With these two data sets, we wanted to ask and think about the following questions when approaching our analysis: In what ways do the emission amounts, types, and locations of Dallas County chemical facilities correlate with redlining letter grades?
 
+  Through data wrangling and the function that we created from the Dallas County Tri Data, we wanted to answer two questions respectively: Which top ten factories released the most amount of chemicals and what type of chemical release (Stack Air, Fugitive Air, or Water) is mainly being emitted from these factories? Through data wrangling, it was revealed that the top ten factories were Aquatic Co, Western Extrusions Corp, DRS NIS LLC, Texas Instruments INC, New Dairy Texas LLC, Sherwin-Williams Co, Texas Finishing Co, Quality Sausage Co, Owens Corning Roofing & Asphalt LLC Irving, and Jones-Blair Co. Through our function, we were able to apply these ten factories and see what type of chemical release is the most prevalent. It was revealed that a majority of the ten factories primarily released Stack Air in comparison to Fugitive Air and Water. Additionally, Water was the least amount released from the top ten factories.
 
+  In our first map, our intended goal is to highlight the relationship between the grading of redlining areas within Dallas County, TX as well as the intensity of the total amount of chemical release from the top ten factories. We've included a polygon map to indicate the grading of redlining areas within Dallas County, TX through the use of the “YlOrRd” color palette. In our data, the grading of redlining areas existed in the column: “holc_grade”. From which officials assigned neighborhoods to one of four color-coded letter grades: D = “hazardous,” C = “definitely declining,” B = “still desirable” and A = “best.” “A” ratings were often assigned to affluent White neighborhoods, while “D” ratings were often assigned to neighborhoods that had a greater share of Black, lower class or immigrant residents. Additionally, we overlaid the map by including circle markers which demonstrated the total amount of chemical released through the “Greens” color palette. A lighter gradient displayed implies a lower amount of chemical release from a factory surrounding the area it’s located in, at least a few chemical emissions are still present. A significant pattern throughout the polygon map is the distinct differences in chemical emissions between redlined areas categorized as D: “hazardous” and A: “best” as there are little to no releases while in areas known as A, and D areas release are relatively closer. 
+  
+  With the last three maps, we are able to visualize the specific chemicals being released, and from what facility. This includes visualizing stack air, fugitive air, and water on these respective maps that reveal information about redlining areas in Dallas County. By doing this, we can more precisely see what county areas of Dallas Texas are being affected by what specific chemical release and raises the question: why are factories releasing this particular type of chemical release? Even with the distinction between chemicals, we can see a pattern between all of the maps, showing us that facilities with these chemical releases in general are more likely to surround areas in Dallas county that have lower redlining grades. Additionally, it was discovered after mapping that stack air seems to be the most prevalent case of releases in comparison to the other two types of releases. 
+  
+  With all the maps there is a clear trend that the facilities are closer and surrounding a lower grade of the redlining areas in Dallas. This proposes an ethical concern surrounding the people who live in these historically redlined areas since there are long lasting effects from redlining. To this day, historically relined areas will have lower home prices, older homes, poorer educational opportunities, and larger POC populations. Having facilities that are closer to low grade red lined areas will predispose the communities who inhabit the redlined area to unnecessarily large amounts of pollution and chemical releases. This poses an even larger issue when considering the lack of accessible health care in the United States, especially for low income individuals and families. 
 
